@@ -1,0 +1,8 @@
+# Bazel artifacts
+bazel-*
+MODULE.bazel.lock
+# Emacs backups
+*~
+\#*\#
+*/out
+\.\#*
