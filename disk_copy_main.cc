@@ -100,18 +100,18 @@ int main(int argc, char* argv[]) {
   if (arg_count < 2) {
     cerr << "Requires a command.";
     cerr << absl::ProgramUsageMessage();
-    return -1;
+    return 1;
   }
   if (arg_count > 2) {
     cerr << "Too many arguments " << arg_count-1 << std::endl;
     cerr << absl::ProgramUsageMessage();
-    return -1;
+    return 1;
   }
   auto cmd = ParseCommand(positional_args[1]);
   if (!cmd.ok()) {
     cerr << cmd.status() << std::endl;
     cerr << absl::ProgramUsageMessage();
-    return -1;
+    return 1;
   }
 
   absl::Status status;
@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
   }
   if (!status.ok()) {
     cerr << status << std::endl;
-    return -2;
+    return 2;
   }
   return 0;
 }

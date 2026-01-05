@@ -17,7 +17,7 @@ file formats, as well as images segmented into multiple files.
 
 Attempts to extract the data bytes from `file.dc42`, writing them as `file.img`.
 
-Tag data is ignored. If --ignore_data_checksum is specified, any mismatch in
+Tag data is ignored. If `--ignore_data_checksum` is specified, any mismatch in
 data checksum is ignored. Tag data checksum is not checked in either case.
 
     disk_copy create --input_image file.img --disk_copy file.dc42
@@ -28,61 +28,55 @@ into a `DC42`-format file named `file.dc42`
     disk_copy verify --disk_copy file.dc42
 
 Verifies the apparent format, and checksums for data *and tag* sections.
-Returns an error status and emits diagnostic messages if the disk_copy
+Returns an error status and emits diagnostic messages if the `--disk_copy`
 file cannot be validated.
 
-Flag options are supported through the Abseil Flags library, https://abseil.io/docs/cpp/guides/flags,
+Flag options are supported through the Abseil Flags library,
+https://abseil.io/docs/cpp/guides/flags,
 which provides flags including `--help`, `--helpshort`, and other features.
 
-# Error codes
+# Shell status codes
 
-Diagnostic error messages are printed to standard error.
+Diagnostic error messages are printed to standard error. Shell status codes
+are set
 
 *  0    : success.
-*  1, 2 : invalid command-line arguments.
+*  1    : invalid command-line arguments.
+*  2    : failure to execute command.
 
 
 # Building
 
-This software uses [Bazel](https://bazel.build/) and depends on the Abseil flags library.
-The build is configured using `MODULE.bazel` and BUILD.
+This software uses [Bazel](https://bazel.build/) and depends on the Abseil
+flags library. The build is configured using `MODULE.bazel` and `BUILD`.
 
 # More information
 
 https://en.wikipedia.org/wiki/Disk_Copy
 
-DART version history is described at
+[DART version history](https://web.archive.org/web/20131219231333/http://support.apple.com/kb/TA29157?viewlocale=en_US)
 
-https://web.archive.org/web/20131219231333/http://support.apple.com/kb/TA29157?viewlocale=en_US
+[Description of Disk Copy 6.3.1 and changes for versions from 6.1](https://web.archive.org/web/20110227061252/http://support.apple.com/kb/DL1262)
 
-Disk Copy 6.3.1 and changes for versions from 6.1 are described at
+Disk Copy 6.3.3 appears to be downloadable from https://web.archive.org
+in a [MacBinary-encoded SMI "self-mounting image"](https://web.archive.org/web/20150608125306/http://download.info.apple.com/Apple_Support_Area/Apple_Software_Updates/English-North_American/Macintosh/Utilities/Disk_Copy/Disk_Copy_6.3.3.smi.bin)
 
-https://web.archive.org/web/20110227061252/http://support.apple.com/kb/DL1262
+Versions localized for other languages might be available at the DL1262
+archive page.
 
-and appears to be downloadable in a MacBinary-encoded SMI "self-mounting image"
+[Description of Disk Copy 6.3.2](https://web.archive.org/web/19990503095942/http://asu.info.apple.com/swupdates.nsf/artnum/n11162)
 
-https://web.archive.org/web/20150608125306/http://download.info.apple.com/Apple_Support_Area/Apple_Software_Updates/English-North_American/Macintosh/Utilities/Disk_Copy/Disk_Copy_6.3.3.smi.bin
+[Macintosh Repository](https://www.macintoshrepository.org/2416-diskcopy-4-2-5-0-5-5-6-0-6-2-6-3-3-6-4-6-5b13-7-0-8-0)
+appears to host multiple versions of DiskCopy.
 
-Versions localized for other languages might be available at the DL1262 archive page.
-
-Disk Copy 6.3.2 is described at
-
-https://web.archive.org/web/19990503095942/http://asu.info.apple.com/swupdates.nsf/artnum/n11162
-
-Copies of Disk Copy appear to be available at
-
-https://www.macintoshrepository.org/2416-diskcopy-4-2-5-0-5-5-6-0-6-2-6-3-3-6-4-6-5b13-7-0-8-0
-
-The Gryphel Project (producer of Mini vMac emulator) includes a tool to verify `DC42` checksums.
-
-https://www.gryphel.com/c/minivmac/extras/dc42chk/index.html
+The Gryphel Project (producer of Mini vMac emulator) includes a
+[tool to verify `DC42` checksums](https://www.gryphel.com/c/minivmac/extras/dc42chk/index.html)
 
 DiskCopy 4.2 format is documented in
 
 [Apple II File Type Note](https://web.archive.org/web/20191231202510/http://nulib.com/library/FTN.e00005.htm)
+and on the
+[68K MLA Wiki](https://web.archive.org/web/20201028142058/https://wiki.68kmla.org/DiskCopy_4.2_format_specification).
 
-and
-
-https://web.archive.org/web/20201028142058/https://wiki.68kmla.org/DiskCopy_4.2_format_specification
 
 
