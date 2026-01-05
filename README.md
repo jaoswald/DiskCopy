@@ -72,8 +72,7 @@ appears to host multiple versions of DiskCopy.
 The Gryphel Project (producer of Mini vMac emulator) includes a
 [tool to verify `DC42` checksums](https://www.gryphel.com/c/minivmac/extras/dc42chk/index.html)
 
-DiskCopy 4.2 format is documented in
-
+DiskCopy 4.2 format is documented in an
 [Apple II File Type Note](https://web.archive.org/web/20191231202510/http://nulib.com/library/FTN.e00005.htm)
 and on the
 [68K MLA Wiki](https://web.archive.org/web/20201028142058/https://wiki.68kmla.org/DiskCopy_4.2_format_specification).
