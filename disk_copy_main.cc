@@ -126,6 +126,72 @@ absl::Status CreateCommand(const string_view input_image,
   return absl::OkStatus();
 }
 
+absl::StatusOr<uint32_t> ExtractCommand(const string_view disk_copy,
+					const string_view output_image,
+					const bool ignore_data_checksum) {
+  if (disk_copy.empty() || output_image.empty()) {
+    return absl::InvalidArgumentError(
+	"Extract requires --disk_copy and --output_image");
+  }
+  std::ifstream input(disk_copy.data(), std::ios::binary);
+  if (!input.good()) {
+    return absl::NotFoundError(absl::StrCat("Could not open disk_copy '",
+					    disk_copy, "'"));
+  }
+  auto header = DiskCopyHeader::ReadFromDisk(input);
+  if (!header.ok()) { return header.status(); }
+  auto header_valid = header->Validate();
+  if (!header_valid.ok()) { return header_valid; }
+  std::ofstream output_hfs(output_image.data(), std::ios::binary);
+  if (!output_hfs.good()) {
+    return absl::ResourceExhaustedError(
+	absl::StrCat("Could not open output_image '", output_image, "'"));
+  }
+  // DiskCopy should be at the end of the header, ready to read data.
+  const uint32_t total_bytes_to_read = header->DataSize();
+  uint32_t bytes_remaining = total_bytes_to_read;
+
+  // Prepare to compute the Disk Copy data checksum as we read.
+  DiskCopyChecksum sum(0);
+  static constexpr uint32_t kBlockSize = 512;
+  char buf[kBlockSize];
+  while (bytes_remaining > 0) {
+    size_t read_size = std::min(bytes_remaining, kBlockSize);
+    if (!input.read(buf, read_size)) {
+      return absl::OutOfRangeError(
+	  absl::StrFormat("Could not read %d bytes of Disk Copy input after %d",
+			  read_size, total_bytes_to_read - bytes_remaining));
+    }
+    bytes_remaining -= read_size;
+    // header_valid call above should mean the only possible error has
+    // already been checked (sum is computed over 16-bit words, so an odd
+    // number of bytes is an error; kBlockSize is even, so read_size will
+    // be even.
+    absl::Status sum_status = sum.UpdateSumFromBlock(buf, read_size);
+    if (!sum_status.ok()) { return sum_status; }
+    if (!output_hfs.write(buf, read_size)) {
+      return absl::ResourceExhaustedError(
+	  absl::StrFormat("Could not write %d bytes of HFS image output at %d",
+			  read_size, total_bytes_to_read - bytes_remaining));
+    }
+  }
+  const uint32_t expected_data_checksum = header->ExpectedDataChecksum();
+  const uint32_t computed_data_checksum = sum.Sum();
+  if (computed_data_checksum != expected_data_checksum) {
+    std::string message = absl::StrFormat(
+	"Disk Copy data checksum %x does not match header %x",
+	computed_data_checksum, expected_data_checksum);
+    cerr << message << std::endl;
+    if (ignore_data_checksum) {
+      cerr << "Ignoring mismatch because of --ignore_data_checksum"
+	   << std::endl;
+    } else {
+      return absl::FailedPreconditionError(message);
+    }
+  }
+  return total_bytes_to_read;
+}
+
 absl::Status VerifyCommand(const string_view disk_copy) {
   if (disk_copy.empty()) {
     return absl::InvalidArgumentError("Verify requires --disk_copy");
@@ -186,7 +252,17 @@ int main(int argc, char* argv[]) {
 			   absl::GetFlag(FLAGS_disk_copy));
     break; 
   case Command::EXTRACT:
-    status = absl::UnimplementedError("extract");
+    {
+      auto bytes_read = ExtractCommand(absl::GetFlag(FLAGS_disk_copy),
+				       absl::GetFlag(FLAGS_output_image),
+				       ignore_data_checksum);
+      if (bytes_read.ok()) {
+	cerr << "Read " << *bytes_read << " bytes (" << (*bytes_read / 512) <<
+	  ") HFS blocks." << std::endl;
+      } else {
+	status = bytes_read.status();
+      }
+    }
     break;
   case Command::VERIFY:
     if (ignore_data_checksum) {
