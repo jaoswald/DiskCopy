@@ -136,9 +136,7 @@ absl::Status VerifyCommand(const string_view disk_copy) {
 					    disk_copy, "'"));
   }
   auto header = DiskCopyHeader::ReadFromDisk(f);
-  if (!header.ok()) {
-    return header.status();
-  }
+  if (!header.ok()) { return header.status(); }
   absl::PrintF("Read header: %v\n", *header);
   return header->VerifyDataChecksum(f);
   // TODO: VerifyTagChecksum if tag bytes present.
