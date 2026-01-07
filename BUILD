@@ -20,6 +20,15 @@ cc_library(
         "@abseil-cpp//absl/strings:strings",
         "@abseil-cpp//absl/status:statusor"])
 
+cc_library(
+    name = "hfs_basic_lib",
+    srcs = ["hfs_basic.cc"],
+    hdrs = ["hfs_basic.h"],
+    deps = [
+        ":endian_lib",
+        "@abseil-cpp//absl/strings:strings",
+        "@abseil-cpp//absl/status:statusor"])
+
 cc_test(
     name = "disk_copy_test",
     srcs = ["disk_copy_test.cc"],
