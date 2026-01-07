@@ -29,9 +29,9 @@ ABSL_FLAG(bool, ignore_data_checksum, false,
 
 ABSL_FLAG(std::string, disk_copy, "", "Path name of Disk Copy 4.2 (`DC42`) "
 	  "image file to read or produce");
-ABSL_FLAG(std::string, output_image, "", "Path name of raw disk image to "
+ABSL_FLAG(std::string, output_image, "", "Path name of raw HFS disk image to "
 	  "produce by extracting from --disk_copy.");
-ABSL_FLAG(std::string, input_image, "", "Path name of raw disk image to "
+ABSL_FLAG(std::string, input_image, "", "Path name of raw HFS disk image to "
 	  "encode into --disk_copy.");
 
 namespace {
