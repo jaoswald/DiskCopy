@@ -105,8 +105,10 @@ namespace {
 
   absl::StatusOr<std::string> FormatByte(const uint8_t fb) {
     switch(fb) {
+    case 0x2:
+      return "400k (alternate)";  // 68k MLA claim.
     case 0x12:
-      return "400k";
+      return "400k";  // Apple FTN doc claim
     case 0x22:
       return ">400k";
     case 0x24:
