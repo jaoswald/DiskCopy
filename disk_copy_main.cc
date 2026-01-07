@@ -22,6 +22,7 @@
 #include "absl/strings/str_format.h"
 
 #include "disk_copy.h"
+#include "hfs_basic.h"
 
 ABSL_FLAG(bool, ignore_data_checksum, false,
 	  "If true, extract data from the --disk_copy file without regard for "
@@ -62,6 +63,63 @@ absl::Status CreateCommand(const string_view input_image,
   if (input_image.empty() || disk_copy.empty()) {
     return absl::InvalidArgumentError(
        "Create requires --input_image and --disk_copy.");
+  }
+  std::ifstream input(input_image.data(), std::ios::binary);
+  if (!input.good()) {
+    return absl::NotFoundError(absl::StrCat("Could not open input_image '",
+					    input_image, "'"));
+  }
+  auto hfsmdb = HFSMasterDirectoryBlock::ReadFromDisk(input);
+  if (!hfsmdb.ok()) {
+    return hfsmdb.status();
+  }
+  absl::PrintF("Read HFS MDB: %v\n", *hfsmdb);
+  auto hfs_block_count = hfsmdb->Valid();
+  if (!hfs_block_count.ok()) { return hfs_block_count.status(); }
+  auto hfs_name = hfsmdb->VolumeName();
+  if (!hfs_name.ok()) { return hfs_name.status(); }
+  absl::PrintF("HFS volume '%s' declared to be %d disk blocks.\n",
+	       *hfs_name, *hfs_block_count);
+
+  // Compute data checksum from HFS file.
+  input.seekg(0);
+  if (input.fail()) {
+    return absl::FailedPreconditionError("Could not seek HFS image stream.");
+  }
+  DiskCopyChecksum sum(0);
+  auto checksum_status = sum.UpdateSumFromFile(input, *hfs_block_count * 512);
+  if (!checksum_status.ok()) { return checksum_status; }
+  auto dch = DiskCopyHeader::CreateForHFS(*hfs_name, *hfs_block_count,
+					  sum.Sum());
+
+  std::ofstream output(disk_copy.data(), std::ios::binary);
+  if (!output.good()) {
+    return absl::ResourceExhaustedError(
+	absl::StrCat("Could not write disk_copy '", disk_copy, "'"));
+  }
+  auto header_status = dch->WriteToDisk(output);
+  if (!header_status.ok()) { return header_status; }
+
+  // There has to be some way to use std::copy or whatever on
+  // streambuf_iterators, and a known number of bytes?
+  // std::istreambuf_iterator<char> input_iterator{input};
+  // std::ostreambuf_iterator<char> output_iterator{output};
+  // std::copy(input_iterator, input_iterator + (*hfs_block_count * 512),
+  // 	    output_iterator);
+  // how to error check?
+
+  input.seekg(0);
+  static constexpr size_t kBlockSize = 512;
+  char buf[kBlockSize];
+  for (uint32_t b = 0; b < *hfs_block_count; ++b) {
+    if (!input.read(buf, kBlockSize)) {
+      return absl::OutOfRangeError(
+	  absl::StrFormat("Could not read block %d of HFS input", b));
+    }
+    if (!output.write(buf, kBlockSize)) {
+      return absl::ResourceExhaustedError(
+	  absl::StrFormat("Could not write block %d of Disk Copy output", b));
+    }
   }
   return absl::OkStatus();
 }

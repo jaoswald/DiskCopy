@@ -39,6 +39,7 @@ cc_binary(
     name = "disk_copy",
     srcs = ["disk_copy_main.cc"],
     deps = [":disk_copy_lib",
+            ":hfs_basic_lib",
             "@abseil-cpp//absl/flags:flag",
             "@abseil-cpp//absl/flags:parse",
             "@abseil-cpp//absl/flags:usage",
