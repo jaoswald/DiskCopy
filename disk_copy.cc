@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "absl/strings/str_cat.h"
+#include "endian.h"
 
 DiskCopyHeader::DiskCopyHeader(const char header_bytes[kHeaderLength]) {
   name_length_ = header_bytes[0];

@@ -59,14 +59,6 @@ class DiskCopyHeader {
 
   // Total file size, in bytes, for the image file described by the header.
   uint32_t TotalFileSize() const;
-  
-  uint16_t BigEndian2(const char b[2]) {
-    const uint8_t* c = (const uint8_t *) b;
-    return c[0] << 8 | c[1];
-  }
-  uint32_t BigEndian4(const char b[4]) {
-    const uint8_t* c = (const uint8_t *) b;
-    return c[0] << 24 | c[1] << 16 | c[2] << 8 | c[3];
   }
   
   explicit DiskCopyHeader(const char header_bytes[kHeaderLength]);
