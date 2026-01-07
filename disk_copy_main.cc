@@ -87,6 +87,8 @@ absl::Status CreateCommand(const string_view input_image,
     return absl::FailedPreconditionError("Could not seek HFS image stream.");
   }
   DiskCopyChecksum sum(0);
+  // Compute the data checksum for the whole HFS data so we have it for the
+  // header; seeking back to update the checksum might save some I/O cost.
   auto checksum_status = sum.UpdateSumFromFile(input, *hfs_block_count * 512);
   if (!checksum_status.ok()) { return checksum_status; }
   auto dch = DiskCopyHeader::CreateForHFS(*hfs_name, *hfs_block_count,
@@ -139,6 +141,7 @@ absl::Status VerifyCommand(const string_view disk_copy) {
   }
   absl::PrintF("Read header: %v\n", *header);
   return header->VerifyDataChecksum(f);
+  // TODO: VerifyTagChecksum if tag bytes present.
 }
 
 }  // namespace

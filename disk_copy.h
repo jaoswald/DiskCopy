@@ -77,7 +77,8 @@ class DiskCopyHeader {
   // file size (in bytes) it represents.
   absl::StatusOr<uint32_t> Validate() const;
 
-  // Total file size, in bytes, for the image file described by the header.
+  // Total Disk Copy file size, in bytes, for the image file described by the
+  // header.
   uint32_t TotalFileSize() const;
 
   // Size of data section in bytes.
