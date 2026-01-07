@@ -124,6 +124,11 @@ int main(int argc, char* argv[]) {
     status = absl::UnimplementedError("extract");
     break;
   case Command::VERIFY:
+    if (absl::GetFlag(FLAGS_ignore_data_checksum)) {
+      status = absl::InvalidArgumentError(
+          "'verify' cannot use --ignore-data-checksum");
+      break;
+    }
     status = VerifyCommand(absl::GetFlag(FLAGS_disk_copy));
     break;
   default:
