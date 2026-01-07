@@ -171,10 +171,16 @@ int main(int argc, char* argv[]) {
     cerr << absl::ProgramUsageMessage();
     return 1;
   }
+  const bool ignore_data_checksum = absl::GetFlag(FLAGS_ignore_data_checksum);
 
   absl::Status status;
   switch (cmd.value()) {
   case Command::CREATE:
+    if (ignore_data_checksum) {
+      status = absl::InvalidArgumentError(
+	  "'create' cannot use --ignore-data-checksum");
+      break;
+    }
     status = CreateCommand(absl::GetFlag(FLAGS_input_image),
 			   absl::GetFlag(FLAGS_disk_copy));
     break; 
@@ -182,7 +188,7 @@ int main(int argc, char* argv[]) {
     status = absl::UnimplementedError("extract");
     break;
   case Command::VERIFY:
-    if (absl::GetFlag(FLAGS_ignore_data_checksum)) {
+    if (ignore_data_checksum) {
       status = absl::InvalidArgumentError(
           "'verify' cannot use --ignore-data-checksum");
       break;
