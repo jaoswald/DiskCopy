@@ -14,6 +14,8 @@ class DiskCopyChecksum {
 
   uint32_t UpdateSum(uint16_t new_word);
   uint32_t Sum() const { return sum_; }
+
+  absl::Status UpdateSumFromFile(std::ifstream& s, uint32_t byte_count);
   
  private:
   uint32_t sum_;

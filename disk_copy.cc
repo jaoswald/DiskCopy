@@ -173,22 +173,17 @@ uint32_t DiskCopyChecksum::UpdateSum(uint16_t new_word) {
   return sum_;
 }
 
-absl::Status DiskCopyHeader::VerifyDataChecksum(std::ifstream& s) {
-  if (data_size_ & 0x1) {
+absl::Status DiskCopyChecksum::UpdateSumFromFile(std::ifstream& s,
+						 uint32_t byte_count) {
+  if (byte_count & 0x1) {
     return absl::FailedPreconditionError(
       absl::StrFormat("Data size %d bytes is not a multiple of 2 bytes",
-		      data_size_));
-  }
-  s.seekg(kHeaderLength);
-  if (s.fail()) {
-    return absl::OutOfRangeError(
-      absl::StrFormat("Could not seek to %d bytes", kHeaderLength));
+		      byte_count));
   }
 
   constexpr size_t kChunkSize = 1024;
   char buf[kChunkSize];
-  size_t remaining_bytes_to_read = data_size_;
-  DiskCopyChecksum sum(0);
+  size_t remaining_bytes_to_read = byte_count;
   size_t data_bytes_read = 0;
   
   while (remaining_bytes_to_read) {
@@ -199,11 +194,24 @@ absl::Status DiskCopyHeader::VerifyDataChecksum(std::ifstream& s) {
 	chunk_size, data_bytes_read, remaining_bytes_to_read));
     }
     for (size_t c = 0; c < chunk_size; c+=2) {
-      sum.UpdateSum(BigEndian2(buf + c));
+      UpdateSum(BigEndian2(buf + c));
     }
     data_bytes_read += chunk_size;
     remaining_bytes_to_read -= chunk_size;
   }
+  return absl::OkStatus();
+}
+
+absl::Status DiskCopyHeader::VerifyDataChecksum(std::ifstream& s) {
+  s.seekg(kHeaderLength);
+  if (s.fail()) {
+    return absl::OutOfRangeError(
+      absl::StrFormat("Could not seek to %d bytes", kHeaderLength));
+  }
+
+  DiskCopyChecksum sum(0);
+  auto status = sum.UpdateSumFromFile(s, data_size_);
+  if (!status.ok()) { return status; }
   uint32_t computed_sum = sum.Sum();
   if (computed_sum != header_data_checksum_) {
     return absl::NotFoundError(absl::StrFormat(
