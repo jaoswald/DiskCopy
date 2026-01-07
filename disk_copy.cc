@@ -31,6 +31,23 @@ absl::StatusOr<DiskCopyHeader> DiskCopyHeader::ReadFromDisk(std::ifstream& s) {
   return DiskCopyHeader(header_bytes);
 }
 
+absl::Status DiskCopyHeader::WriteToDisk(std::ofstream& s) {
+  char header_bytes[kHeaderLength];
+  header_bytes[0] = name_length_;
+  memcpy(header_bytes+1, name_bytes_, kMaxNameLength);
+  WriteBigEndian4(data_size_, header_bytes+64);
+  WriteBigEndian4(tag_size_, header_bytes+68);
+  WriteBigEndian4(header_data_checksum_, header_bytes+72);
+  WriteBigEndian4(header_tag_checksum_, header_bytes+76);
+  header_bytes[80] = disk_format_;
+  header_bytes[81] = format_byte_;
+  WriteBigEndian2(private_, header_bytes+82);
+  if (!s.write(header_bytes, kHeaderLength)) {
+    return absl::ResourceExhaustedError("Could not write DiskCopyHeader");
+  }
+  return absl::OkStatus();
+}
+
 absl::StatusOr<DiskCopyHeader> DiskCopyHeader::CreateForHFS(
 	       const absl::string_view name,
 	       const uint32_t data_block_count,

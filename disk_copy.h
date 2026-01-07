@@ -34,6 +34,10 @@ class DiskCopyHeader {
   static absl::StatusOr<DiskCopyHeader>
     ReadFromDisk(std::ifstream& s);
 
+  // Writes header to (binary-format) file stream; it DOES NOT seek the
+  // stream before writing.
+  absl::Status WriteToDisk(std::ofstream& s);
+
   // Create a header for an HFS floppy with the specified volume name.
   // Returns an error if the name is too long.
   // data_block_count is the size in HFS (512-byte) disk blocks.
