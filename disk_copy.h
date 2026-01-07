@@ -80,6 +80,16 @@ class DiskCopyHeader {
   // Total file size, in bytes, for the image file described by the header.
   uint32_t TotalFileSize() const;
 
+  // Size of data section in bytes.
+  uint32_t DataSize() const { return data_size_; }
+  // Checksum expected from header.
+  uint32_t ExpectedDataChecksum() const { return header_data_checksum_; }
+
+  // Size of tag section in bytes.
+  uint32_t TagSize() const { return tag_size_; }
+  // Checksum expected from header.
+  uint32_t ExpectedTagChecksum() const { return header_tag_checksum_; }
+
  private:
   static constexpr size_t kHeaderLength = 84;
   static constexpr size_t kMaxNameLength = 63;
