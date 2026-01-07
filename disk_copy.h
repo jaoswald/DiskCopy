@@ -48,21 +48,22 @@ class DiskCopyHeader {
   // header indicates no tag bits are present, always return OK without
   // reading any data.
   absl::Status VerifyTagChecksum(std::ifstream& s);
-  
+
+  // Checks header for validity; if header appears valid, returns the total
+  // file size (in bytes) it represents.
+  absl::StatusOr<uint32_t> Validate() const;
+
+  // Total file size, in bytes, for the image file described by the header.
+  uint32_t TotalFileSize() const;
+
  private:
   static constexpr size_t kHeaderLength = 84;
   static constexpr size_t kMaxNameLength = 63;
   static constexpr uint16_t kPrivate = 0x100;  // magic number
 
-  // Checks header for validity; if header appears valid, returns the total file size it represents.
-  absl::StatusOr<uint32_t> Validate() const;
-
-  // Total file size, in bytes, for the image file described by the header.
-  uint32_t TotalFileSize() const;
+  explicit DiskCopyHeader(const char header_bytes[kHeaderLength]);
   }
   
-  explicit DiskCopyHeader(const char header_bytes[kHeaderLength]);
-    
   size_t name_length_;
   char name_bytes_[kMaxNameLength];
 
