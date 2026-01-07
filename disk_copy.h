@@ -15,8 +15,14 @@ class DiskCopyChecksum {
   uint32_t UpdateSum(uint16_t new_word);
   uint32_t Sum() const { return sum_; }
 
+  // Updates sum by reading `byte_count` bytes from `s`. Will return an
+  // error if an I/O error is detected, or if byte_count is not even.
   absl::Status UpdateSumFromFile(std::ifstream& s, uint32_t byte_count);
   
+  // Updates sum from a buffer in memory. The buffer must be an even number
+  // of bytes; that is the only source of an error.
+  absl::Status UpdateSumFromBlock(const char* buf, uint32_t byte_count);
+
  private:
   uint32_t sum_;
 };

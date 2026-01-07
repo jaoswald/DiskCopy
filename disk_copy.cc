@@ -185,6 +185,16 @@ uint32_t DiskCopyChecksum::UpdateSum(uint16_t new_word) {
   return sum_;
 }
 
+absl::Status DiskCopyChecksum::UpdateSumFromBlock(const char* buffer,
+						  uint32_t byte_count) {
+  auto byte_count_status = CheckEven(byte_count);
+  if (!byte_count_status.ok()) { return byte_count_status; }
+  for (size_t c = 0; c < byte_count; c+=2) {
+    UpdateSum(BigEndian2(buffer + c));
+  }
+  return absl::OkStatus();
+}
+
 absl::Status DiskCopyChecksum::UpdateSumFromFile(std::ifstream& s,
 						 uint32_t byte_count) {
   auto byte_count_status = CheckEven(byte_count);
@@ -202,9 +212,8 @@ absl::Status DiskCopyChecksum::UpdateSumFromFile(std::ifstream& s,
 	"Failed to read %d bytes after %d bytes read, %d bytes remaining",
 	chunk_size, data_bytes_read, remaining_bytes_to_read));
     }
-    for (size_t c = 0; c < chunk_size; c+=2) {
-      UpdateSum(BigEndian2(buf + c));
-    }
+    auto sum_status = UpdateSumFromBlock(buf, chunk_size);
+    if (!sum_status.ok()) { return sum_status; }
     data_bytes_read += chunk_size;
     remaining_bytes_to_read -= chunk_size;
   }
