@@ -119,6 +119,14 @@ namespace {
     }
   }
 
+  absl::Status CheckEven(uint32_t byte_count) {
+    if (byte_count % 1) {
+      return absl::InvalidArgumentError(absl::StrFormat(
+         "Data size %d is not an even number of bytes.", byte_count));
+    }
+    return absl::OkStatus();
+  }
+
 }  // namespace
 
 std::string DiskCopyHeader::DebugString() const {
@@ -159,6 +167,8 @@ absl::StatusOr<uint32_t> DiskCopyHeader::Validate() const {
   if (private_ != kPrivate)
     return absl::InvalidArgumentError(absl::StrFormat(
      "Invalid magic number %s != 0x100", private_));
+  auto valid_data_size = CheckEven(data_size_);
+  if (!valid_data_size.ok()) { return valid_data_size; }
   return TotalFileSize();
 }
 
@@ -177,11 +187,8 @@ uint32_t DiskCopyChecksum::UpdateSum(uint16_t new_word) {
 
 absl::Status DiskCopyChecksum::UpdateSumFromFile(std::ifstream& s,
 						 uint32_t byte_count) {
-  if (byte_count & 0x1) {
-    return absl::FailedPreconditionError(
-      absl::StrFormat("Data size %d bytes is not a multiple of 2 bytes",
-		      byte_count));
-  }
+  auto byte_count_status = CheckEven(byte_count);
+  if (!byte_count_status.ok()) { return byte_count_status; }
 
   constexpr size_t kChunkSize = 1024;
   char buf[kChunkSize];
