@@ -34,6 +34,18 @@ class DiskCopyHeader {
   static absl::StatusOr<DiskCopyHeader>
     ReadFromDisk(std::ifstream& s);
 
+  // Create a header for an HFS floppy with the specified volume name.
+  // Returns an error if the name is too long.
+  // data_block_count is the size in HFS (512-byte) disk blocks.
+  // Returns an error if data_block_count does not appear to be a 400k, 800k,
+  // 720k or 1440k floppy.
+  static absl::StatusOr<DiskCopyHeader>
+  CreateForHFS(absl::string_view name,
+	       uint32_t data_block_count,
+	       uint32_t data_checksum,
+	       uint32_t tag_byte_count = 0,
+	       uint32_t tag_checksum = 0);
+
   // Verify the data checksum of an image:
   // Read the data words from ifstream s, based on the header contents.
   // Compute the data checksum, and compare it to header_data_checksum_.
@@ -62,6 +74,23 @@ class DiskCopyHeader {
   static constexpr uint16_t kPrivate = 0x100;  // magic number
 
   explicit DiskCopyHeader(const char header_bytes[kHeaderLength]);
+  DiskCopyHeader(const std::string_view name,
+		 uint32_t data_size,
+		 uint32_t tag_size,
+		 uint32_t header_data_checksum,
+		 uint32_t header_tag_checksum,
+		 uint8_t disk_format,
+		 uint8_t format_byte)
+    : name_length_(std::min(name.length(), kMaxNameLength)),
+      data_size_(data_size),
+      tag_size_(tag_size),
+      header_data_checksum_(header_data_checksum),
+      header_tag_checksum_(header_tag_checksum),
+      disk_format_(disk_format),
+      format_byte_(format_byte),
+      private_(kPrivate) {
+    memset(name_bytes_, 0, kMaxNameLength);
+    strncpy(name_bytes_, name.data(), name_length_);
   }
   
   size_t name_length_;

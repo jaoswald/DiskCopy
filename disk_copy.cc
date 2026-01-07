@@ -31,6 +31,42 @@ absl::StatusOr<DiskCopyHeader> DiskCopyHeader::ReadFromDisk(std::ifstream& s) {
   return DiskCopyHeader(header_bytes);
 }
 
+absl::StatusOr<DiskCopyHeader> DiskCopyHeader::CreateForHFS(
+	       const absl::string_view name,
+	       const uint32_t data_block_count,
+	       const uint32_t data_checksum,
+	       const uint32_t tag_byte_count,
+	       const uint32_t tag_checksum) {
+  const size_t name_length = name.length();
+  if (name_length > kMaxNameLength) {
+    return absl::InvalidArgumentError(absl::StrFormat(
+	"name '%s' length %d is longer than the DC42 maximum %d",
+	name, name_length, kMaxNameLength));
+  }
+  uint8_t disk_format_byte;
+  uint8_t format_byte;
+  if (800 == data_block_count) {
+    disk_format_byte = 0;
+    format_byte = 0x12;  // Follow Apple File Type Note
+  } else if (1600 == data_block_count) {
+    disk_format_byte = 1;
+    format_byte = 0x22;
+  } else if (1440 == data_block_count) {
+    disk_format_byte = 2;
+    format_byte = 0x22;
+  } else if (2880 == data_block_count) {
+    disk_format_byte = 3;
+    format_byte = 0x22;
+  } else {
+    return absl::InvalidArgumentError(absl::StrFormat(
+        "HFS data block count %d is not recognized as valid",
+	data_block_count));
+  }
+  return DiskCopyHeader(name, data_block_count*512, tag_byte_count,
+			data_checksum, tag_checksum,
+			disk_format_byte, format_byte);
+}
+
 namespace {
 
   absl::StatusOr<std::string> DiskFormatByte(const uint8_t dfb) {
