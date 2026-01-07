@@ -2,7 +2,7 @@
 
 The 'Disk Copy' program provided by Apple came in several versions.
 This tool (for now) processes only 'Disk Copy 4.2' (`DC42`) format
-images.
+images, wrapping Macintosh HFS floppy images.
 
 DART ("Disk Archive/Retrieval Tool") 1.5 (version numbers reached 1.5.3)
 produces a compressed image format.
@@ -22,7 +22,7 @@ data checksum is ignored. Tag data checksum is not checked in either case.
 
     disk_copy create --input_image file.img --disk_copy file.dc42
 
-Attempts to encode the contents of `file.img` (assumed to be raw disk image)
+Attempts to encode the contents of `file.img` (assumed to be raw HFS disk image)
 into a `DC42`-format file named `file.dc42`
 
     disk_copy verify --disk_copy file.dc42
@@ -43,7 +43,6 @@ are set
 *  0    : success.
 *  1    : invalid command-line arguments.
 *  2    : failure to execute command.
-
 
 # Building
 
