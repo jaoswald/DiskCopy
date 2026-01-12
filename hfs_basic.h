@@ -21,8 +21,7 @@ class HFSMasterDirectoryBlock {
   // Read MDB from a (binary-format) file stream; assumes the stream contains
   // a raw image, seeks to the first MDB offset at byte offset 1024 (logical
   // block 2)
-  static absl::StatusOr<HFSMasterDirectoryBlock>
-    ReadFromDisk(std::ifstream& s);
+  static absl::StatusOr<HFSMasterDirectoryBlock> ReadFromDisk(std::ifstream& s);
 
   // Returns an error if the volume name cannot be extracted (has invalid
   // length). Should also check Valid() before relying on this.

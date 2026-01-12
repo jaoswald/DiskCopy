@@ -23,4 +23,3 @@ TEST(DiskCopyChecksum, Rotate1BitMoreComplex) {
   EXPECT_EQ(0x80001234, checksum);
   EXPECT_EQ(0x80001234, sum.Sum());
 }
-  

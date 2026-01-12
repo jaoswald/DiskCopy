@@ -9,8 +9,7 @@
 
 class DiskCopyChecksum {
  public:
- explicit DiskCopyChecksum(uint32_t initial_sum = 0) :
-  sum_(initial_sum) {}
+  explicit DiskCopyChecksum(uint32_t initial_sum = 0) : sum_(initial_sum) {}
 
   uint32_t UpdateSum(uint16_t new_word);
   uint32_t Sum() const { return sum_; }
@@ -18,7 +17,7 @@ class DiskCopyChecksum {
   // Updates sum by reading `byte_count` bytes from `s`. Will return an
   // error if an I/O error is detected, or if byte_count is not even.
   absl::Status UpdateSumFromFile(std::ifstream& s, uint32_t byte_count);
-  
+
   // Updates sum from a buffer in memory. The buffer must be an even number
   // of bytes; that is the only source of an error.
   absl::Status UpdateSumFromBlock(const char* buf, uint32_t byte_count);
@@ -30,7 +29,7 @@ class DiskCopyChecksum {
 class DiskCopyHeader {
  public:
   template <typename Sink>
-    friend void AbslStringify(Sink& sink, const DiskCopyHeader& h) {
+  friend void AbslStringify(Sink& sink, const DiskCopyHeader& h) {
     absl::Format(&sink, "%s", h.DebugString());
   }
 
@@ -39,8 +38,7 @@ class DiskCopyHeader {
 
   // Read header from a (binary-format) file stream; seeks to the start of
   // the stream, leaving s positioned at the start of the data.
-  static absl::StatusOr<DiskCopyHeader>
-    ReadFromDisk(std::ifstream& s);
+  static absl::StatusOr<DiskCopyHeader> ReadFromDisk(std::ifstream& s);
 
   // Writes header to (binary-format) file stream; it DOES NOT seek the
   // stream before writing.
@@ -51,12 +49,9 @@ class DiskCopyHeader {
   // data_block_count is the size in HFS (512-byte) disk blocks.
   // Returns an error if data_block_count does not appear to be a 400k, 800k,
   // 720k or 1440k floppy.
-  static absl::StatusOr<DiskCopyHeader>
-  CreateForHFS(absl::string_view name,
-	       uint32_t data_block_count,
-	       uint32_t data_checksum,
-	       uint32_t tag_byte_count = 0,
-	       uint32_t tag_checksum = 0);
+  static absl::StatusOr<DiskCopyHeader> CreateForHFS(
+      absl::string_view name, uint32_t data_block_count, uint32_t data_checksum,
+      uint32_t tag_byte_count = 0, uint32_t tag_checksum = 0);
 
   // Verify the data checksum of an image:
   // Read the data words from ifstream s, based on the header contents.
@@ -97,25 +92,22 @@ class DiskCopyHeader {
   static constexpr uint16_t kPrivate = 0x100;  // magic number
 
   explicit DiskCopyHeader(const char header_bytes[kHeaderLength]);
-  DiskCopyHeader(const std::string_view name,
-		 uint32_t data_size,
-		 uint32_t tag_size,
-		 uint32_t header_data_checksum,
-		 uint32_t header_tag_checksum,
-		 uint8_t disk_format,
-		 uint8_t format_byte)
-    : name_length_(std::min(name.length(), kMaxNameLength)),
-      data_size_(data_size),
-      tag_size_(tag_size),
-      header_data_checksum_(header_data_checksum),
-      header_tag_checksum_(header_tag_checksum),
-      disk_format_(disk_format),
-      format_byte_(format_byte),
-      private_(kPrivate) {
+  DiskCopyHeader(const std::string_view name, uint32_t data_size,
+                 uint32_t tag_size, uint32_t header_data_checksum,
+                 uint32_t header_tag_checksum, uint8_t disk_format,
+                 uint8_t format_byte)
+      : name_length_(std::min(name.length(), kMaxNameLength)),
+        data_size_(data_size),
+        tag_size_(tag_size),
+        header_data_checksum_(header_data_checksum),
+        header_tag_checksum_(header_tag_checksum),
+        disk_format_(disk_format),
+        format_byte_(format_byte),
+        private_(kPrivate) {
     memset(name_bytes_, 0, kMaxNameLength);
     strncpy(name_bytes_, name.data(), name_length_);
   }
-  
+
   size_t name_length_;
   char name_bytes_[kMaxNameLength];
 
@@ -124,7 +116,7 @@ class DiskCopyHeader {
   uint32_t tag_size_;
   uint32_t header_data_checksum_;
   uint32_t header_tag_checksum_;
-  
+
   // Allegedly 0 = 400k  [GCR CLV ssdd] (Mac single-sided)
   //           1 = 800k  [GCR CLV dsdd] (Mac double-sided)
   //           2 = 720k  [MFM CAV dsdd] (PC double-density, double-sided)
@@ -183,7 +175,7 @@ class DiskCopyHeader {
   // \\------- unused, always 0
   //
   uint8_t format_byte_;
-  
+
   // Should always be 0x0100; effectively a magic number.
   uint16_t private_;
 
@@ -226,4 +218,4 @@ class DiskCopyHeader {
   // file; this may indicate something special.
 };
 
-#endif // __DISK_COPY_H__
+#endif  // __DISK_COPY_H__
